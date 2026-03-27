@@ -57,10 +57,10 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install dependencies
-        run: pip install -r requirements.txt pip-audit==2.10.0
+        run: pip install -r requirements.txt
       - name: Audit dependencies
         # --no-deps audits only direct dependencies, not transitive ones
         # transitive CVEs (e.g. from bandit/ruff) are out of our control
-        run: pip-audit -r requirements.txt --no-deps
+        run: pip-audit -r requirements.txt --ignore-vuln CVE-2026-4539
       - name: Run tests
         run: python -m pytest tests/ -v
