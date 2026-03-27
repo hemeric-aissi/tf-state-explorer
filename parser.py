@@ -258,30 +258,21 @@ def _parse_outputs(raw_outputs: dict) -> list[TFOutput]:
 # Source loading
 # ---------------------------------------------------------------------------
 
+from urllib.parse import urlparse
+
 def _load_source(source: str) -> dict:
-    """
-    Loads and parses a JSON state file from a local path or an HTTP(S) URL.
-
-    Local paths are read with UTF-8 encoding.  HTTP(S) URLs are fetched with
-    a 15-second timeout — useful for pre-signed S3 URLs or remote backends.
-
-    Args:
-        source: A local file path or an HTTP(S) URL.
-
-    Returns:
-        The parsed JSON content as a Python dict.
-
-    Raises:
-        FileNotFoundError:   If the local file does not exist.
-        ValueError:          If the path exists but is not a regular file.
-        json.JSONDecodeError: Propagated to the caller for consistent handling.
-    """
-    if source.startswith("http://") or source.startswith("https://"):
-        # URL scheme validated by startswith — safe to open
-        with urllib.request.urlopen(source, timeout=15) as resp:  # noqa: S310
+    parsed_url = urlparse(source)
+    
+    if parsed_url.scheme in ("http", "https"):
+        # Scheme explicitly validated — safe to open
+        with urllib.request.urlopen(source, timeout=15) as resp:  # nosec B310
             raw = resp.read().decode("utf-8")
         return json.loads(raw)
+    
+    if parsed_url.scheme and parsed_url.scheme not in ("", "file"):
+        raise ValueError(f"Unsupported URL scheme '{parsed_url.scheme}'. Only http/https are allowed.")
 
+    # Local file path
     path = Path(source)
     if not path.exists():
         raise FileNotFoundError(f"State file not found: {source}")
@@ -289,7 +280,6 @@ def _load_source(source: str) -> dict:
         raise ValueError(f"Path is not a regular file: {source}")
 
     return json.loads(path.read_text(encoding="utf-8"))
-
 
 # ---------------------------------------------------------------------------
 # Version check
