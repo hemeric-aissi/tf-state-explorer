@@ -23,7 +23,6 @@ import pytest
 from parser import (
     ParsedState,
     StateParser,
-    TFOutput,
     TFResource,
     _extract_provider,
     _parse_resource,

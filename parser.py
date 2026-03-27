@@ -17,9 +17,10 @@ Public API
 
 from __future__ import annotations
 
+import urllib.request
 import json
 import re
-import urllib.request
+from urllib.parse import urlparse
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -262,9 +263,6 @@ def _parse_outputs(raw_outputs: dict) -> list[TFOutput]:
 # ---------------------------------------------------------------------------
 # Source loading
 # ---------------------------------------------------------------------------
-
-from urllib.parse import urlparse
-
 
 def _load_source(source: str) -> dict:
     parsed_url = urlparse(source)
