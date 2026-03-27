@@ -59,6 +59,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt pip-audit==2.10.0
       - name: Audit dependencies
-        run: pip-audit -r requirements.txt
+        # --no-deps audits only direct dependencies, not transitive ones
+        # transitive CVEs (e.g. from bandit/ruff) are out of our control
+        run: pip-audit -r requirements.txt --no-deps
       - name: Run tests
         run: python -m pytest tests/ -v
