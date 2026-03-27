@@ -291,9 +291,7 @@ def format_resource(resource: TFResource, *, color: bool = True) -> str:
         name_part = f"{_BOLD}{resource.name}{_RESET}"
         provider_part = f"{_DIM}[{resource.provider}]{_RESET}"
         module_part = (
-            f"  {_YELLOW}({resource.module}){_RESET}"
-            if resource.module
-            else ""
+            f"  {_YELLOW}({resource.module}){_RESET}" if resource.module else ""
         )
     else:
         type_part = resource.type
@@ -329,8 +327,7 @@ def format_summary(s: ResourceSummary, *, color: bool = True) -> str:
 
     # Build provider counts string: "aws (8), google (4)"
     provider_counts = ", ".join(
-        f"{name} ({count})"
-        for name, count in s.counts_by_provider.items()
+        f"{name} ({count})" for name, count in s.counts_by_provider.items()
     )
 
     # Build module list: named modules + "root" if any root resources
@@ -344,11 +341,8 @@ def format_summary(s: ResourceSummary, *, color: bool = True) -> str:
         f"{bold}Resources:{reset}    "
         f"{green}{s.total_resources} managed{reset}, "
         f"{dim}{s.total_data_sources} data sources{reset}",
-
         f"{bold}Providers:{reset}    {magenta}{provider_counts}{reset}",
-
         f"{bold}Types:{reset}        {len(s.resource_types)} unique",
-
         f"{bold}Modules:{reset}      {modules_str}",
     ]
 

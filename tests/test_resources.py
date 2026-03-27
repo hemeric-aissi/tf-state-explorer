@@ -252,16 +252,12 @@ class TestFilterResources:
 
     def test_combined_filters(self, module_state):
         # provider=aws AND module=module.vpc should return 2 resources
-        result = filter_resources(
-            module_state, provider="aws", module="module.vpc"
-        )
+        result = filter_resources(module_state, provider="aws", module="module.vpc")
         assert len(result) == 2
 
     def test_combined_filters_no_match(self, module_state):
         # provider=google AND module=module.vpc — no match
-        result = filter_resources(
-            module_state, provider="google", module="module.vpc"
-        )
+        result = filter_resources(module_state, provider="google", module="module.vpc")
         assert result == []
 
 
