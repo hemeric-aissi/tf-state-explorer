@@ -37,6 +37,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def load_fixture(name: str) -> str:
     """Returns the absolute path to a fixture file as a string."""
     return str(FIXTURES / name)
@@ -45,6 +46,7 @@ def load_fixture(name: str) -> str:
 # ---------------------------------------------------------------------------
 # _extract_provider
 # ---------------------------------------------------------------------------
+
 
 class TestExtractProvider:
     """
@@ -87,6 +89,7 @@ class TestExtractProvider:
 # ---------------------------------------------------------------------------
 # _parse_resource
 # ---------------------------------------------------------------------------
+
 
 class TestParseResource:
     """
@@ -162,10 +165,12 @@ class TestParseResource:
 
     def test_multiple_instances_indexed(self):
         # When count > 1, each instance gets an index suffix
-        raw = self._make_raw(instances=[
-            {"attributes": {"id": "i-001"}, "dependencies": []},
-            {"attributes": {"id": "i-002"}, "dependencies": []},
-        ])
+        raw = self._make_raw(
+            instances=[
+                {"attributes": {"id": "i-001"}, "dependencies": []},
+                {"attributes": {"id": "i-002"}, "dependencies": []},
+            ]
+        )
         resources = _parse_resource(raw, [])
         assert len(resources) == 2
         assert resources[0].name == "web[0]"
@@ -182,6 +187,7 @@ class TestParseResource:
 # TFResource.address and short_address
 # ---------------------------------------------------------------------------
 
+
 class TestTFResourceAddress:
     """
     Tests for the TFResource.address and TFResource.short_address properties.
@@ -195,9 +201,14 @@ class TestTFResourceAddress:
         Any keyword argument overrides the corresponding field.
         """
         defaults = dict(
-            type="aws_instance", name="web", provider="aws",
-            mode="managed", module=None, attributes={},
-            dependencies=[], raw={},
+            type="aws_instance",
+            name="web",
+            provider="aws",
+            mode="managed",
+            module=None,
+            attributes={},
+            dependencies=[],
+            raw={},
         )
         defaults.update(kwargs)
         return TFResource(**defaults)
@@ -218,7 +229,9 @@ class TestTFResourceAddress:
 
     def test_data_source_address_with_module(self):
         # Module-scoped data source combines both prefixes
-        r = self._resource(mode="data", type="aws_ami", name="ubuntu", module="module.app")
+        r = self._resource(
+            mode="data", type="aws_ami", name="ubuntu", module="module.app"
+        )
         assert r.address == "module.app.data.aws_ami.ubuntu"
 
     def test_short_address_no_module(self):
@@ -234,6 +247,7 @@ class TestTFResourceAddress:
 # ---------------------------------------------------------------------------
 # StateParser — simple fixture (simple_v4.tfstate)
 # ---------------------------------------------------------------------------
+
 
 class TestStateParserSimple:
     """
@@ -311,6 +325,7 @@ class TestStateParserSimple:
 # StateParser — module fixture (with_modules.tfstate)
 # ---------------------------------------------------------------------------
 
+
 class TestStateParserWithModules:
     """
     Integration tests using with_modules.tfstate.
@@ -352,6 +367,7 @@ class TestStateParserWithModules:
 # StateParser — error handling
 # ---------------------------------------------------------------------------
 
+
 class TestStateParserErrors:
     """
     Tests for error handling in StateParser.parse().
@@ -367,7 +383,9 @@ class TestStateParserErrors:
 
     def test_invalid_json(self):
         # A file that is not valid JSON must raise ValueError
-        with tempfile.NamedTemporaryFile(suffix=".tfstate", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".tfstate", mode="w", delete=False
+        ) as f:
             f.write("this is not json {{{")
             path = f.name
         with pytest.raises(ValueError, match="Invalid JSON"):
@@ -375,7 +393,9 @@ class TestStateParserErrors:
 
     def test_json_array_not_object(self):
         # A JSON array at the top level is not a valid tfstate
-        with tempfile.NamedTemporaryFile(suffix=".tfstate", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".tfstate", mode="w", delete=False
+        ) as f:
             json.dump([], f)
             path = f.name
         with pytest.raises(ValueError, match="JSON object"):
@@ -392,7 +412,9 @@ class TestStateParserErrors:
             "outputs": {},
             "resources": [],
         }
-        with tempfile.NamedTemporaryFile(suffix=".tfstate", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".tfstate", mode="w", delete=False
+        ) as f:
             json.dump(data, f)
             path = f.name
         state = StateParser().parse(path)
@@ -408,7 +430,9 @@ class TestStateParserErrors:
             "outputs": {},
             "resources": [],
         }
-        with tempfile.NamedTemporaryFile(suffix=".tfstate", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".tfstate", mode="w", delete=False
+        ) as f:
             json.dump(data, f)
             path = f.name
         state = StateParser().parse(path)

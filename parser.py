@@ -29,6 +29,7 @@ from typing import Optional
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TFResource:
     """
@@ -39,14 +40,14 @@ class TFResource:
     TFResource with a suffixed name (e.g. "server[0]", "server[1]").
     """
 
-    type: str                       # Resource type,  e.g. "aws_instance"
-    name: str                       # Resource name,  e.g. "web"
-    provider: str                   # Short provider, e.g. "aws"
-    mode: str                       # "managed" for resources, "data" for data sources
-    module: Optional[str]           # Module path, e.g. "module.vpc", or None for root
-    attributes: dict                # Flat key/value map of all resource attributes
-    dependencies: list[str]         # Addresses of resources this one depends on
-    raw: dict = field(repr=False)   # Original JSON block, kept for edge-case access
+    type: str  # Resource type,  e.g. "aws_instance"
+    name: str  # Resource name,  e.g. "web"
+    provider: str  # Short provider, e.g. "aws"
+    mode: str  # "managed" for resources, "data" for data sources
+    module: Optional[str]  # Module path, e.g. "module.vpc", or None for root
+    attributes: dict  # Flat key/value map of all resource attributes
+    dependencies: list[str]  # Addresses of resources this one depends on
+    raw: dict = field(repr=False)  # Original JSON block, kept for edge-case access
 
     @property
     def address(self) -> str:
@@ -83,10 +84,10 @@ class TFResource:
 class TFOutput:
     """A single output value declared in the Terraform state."""
 
-    name: str        # Output name as declared in outputs.tf
-    value: object    # Actual value (any JSON-serializable type); None if sensitive
+    name: str  # Output name as declared in outputs.tf
+    value: object  # Actual value (any JSON-serializable type); None if sensitive
     sensitive: bool  # True when Terraform marks the output as sensitive
-    type: str        # Terraform type string, e.g. "string", "list", "map"
+    type: str  # Terraform type string, e.g. "string", "list", "map"
 
 
 @dataclass
@@ -138,13 +139,11 @@ class ParsedState:
 # Matches the modern registry format introduced in Terraform 0.13:
 #   provider["registry.terraform.io/hashicorp/aws"]  ->  "aws"
 #   provider["registry.terraform.io/datadog/datadog"]  ->  "datadog"
-_PROVIDER_RE = re.compile(
-    r'provider\["registry\.terraform\.io/[^/]+/([^"]+)"\]'
-)
+_PROVIDER_RE = re.compile(r'provider\["registry\.terraform\.io/[^/]+/([^"]+)"\]')
 
 # Matches the legacy format used in Terraform < 0.13:
 #   provider.aws  ->  "aws"
-_LEGACY_PROVIDER_RE = re.compile(r'provider\.(\w+)')
+_LEGACY_PROVIDER_RE = re.compile(r"provider\.(\w+)")
 
 
 def _extract_provider(raw_provider: str) -> str:
@@ -176,6 +175,7 @@ def _extract_provider(raw_provider: str) -> str:
 # ---------------------------------------------------------------------------
 # Resource parsing
 # ---------------------------------------------------------------------------
+
 
 def _parse_resource(raw: dict, warnings: list[str]) -> list[TFResource]:
     """
@@ -215,16 +215,18 @@ def _parse_resource(raw: dict, warnings: list[str]) -> list[TFResource]:
         # single-instance resources keep a clean name (e.g. "web" not "web[0]").
         name = res_name if len(instances) == 1 else f"{res_name}[{idx}]"
 
-        results.append(TFResource(
-            type=res_type,
-            name=name,
-            provider=provider,
-            mode=mode,
-            module=module,
-            attributes=attributes,
-            dependencies=dependencies,
-            raw=raw,
-        ))
+        results.append(
+            TFResource(
+                type=res_type,
+                name=name,
+                provider=provider,
+                mode=mode,
+                module=module,
+                attributes=attributes,
+                dependencies=dependencies,
+                raw=raw,
+            )
+        )
 
     return results
 
@@ -232,6 +234,7 @@ def _parse_resource(raw: dict, warnings: list[str]) -> list[TFResource]:
 # ---------------------------------------------------------------------------
 # Output parsing
 # ---------------------------------------------------------------------------
+
 
 def _parse_outputs(raw_outputs: dict) -> list[TFOutput]:
     """
@@ -245,12 +248,14 @@ def _parse_outputs(raw_outputs: dict) -> list[TFOutput]:
     """
     outputs = []
     for name, data in raw_outputs.items():
-        outputs.append(TFOutput(
-            name=name,
-            value=data.get("value"),
-            sensitive=data.get("sensitive", False),
-            type=str(data.get("type", "unknown")),
-        ))
+        outputs.append(
+            TFOutput(
+                name=name,
+                value=data.get("value"),
+                sensitive=data.get("sensitive", False),
+                type=str(data.get("type", "unknown")),
+            )
+        )
     return outputs
 
 
@@ -260,17 +265,20 @@ def _parse_outputs(raw_outputs: dict) -> list[TFOutput]:
 
 from urllib.parse import urlparse
 
+
 def _load_source(source: str) -> dict:
     parsed_url = urlparse(source)
-    
+
     if parsed_url.scheme in ("http", "https"):
         # Scheme explicitly validated — safe to open
         with urllib.request.urlopen(source, timeout=15) as resp:  # nosec B310
             raw = resp.read().decode("utf-8")
         return json.loads(raw)
-    
+
     if parsed_url.scheme and parsed_url.scheme not in ("", "file"):
-        raise ValueError(f"Unsupported URL scheme '{parsed_url.scheme}'. Only http/https are allowed.")
+        raise ValueError(
+            f"Unsupported URL scheme '{parsed_url.scheme}'. Only http/https are allowed."
+        )
 
     # Local file path
     path = Path(source)
@@ -280,6 +288,7 @@ def _load_source(source: str) -> dict:
         raise ValueError(f"Path is not a regular file: {source}")
 
     return json.loads(path.read_text(encoding="utf-8"))
+
 
 # ---------------------------------------------------------------------------
 # Version check
@@ -309,6 +318,7 @@ def _check_version(data: dict, warnings: list[str]) -> None:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 class StateParser:
     """
